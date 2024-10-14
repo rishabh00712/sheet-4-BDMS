@@ -1,0 +1,163 @@
+                                                            ASS-8
+.........................................................................................................................................
+Q1.
+Give names of customer who have sent packages (shipments) to Kolkata, Chennai
+and Munbai.
+=>
+SELECT cust_name
+FROM Customer
+WHERE cust_id = (
+    SELECT cust_id
+    FROM Shipment
+    WHERE destination IN ('Kolkata', 'Chennai', 'Mumbai')
+    GROUP BY cust_id
+    HAVING COUNT(DISTINCT destination) = 3
+);
+..............................................
+Q2.List the names of the driver who have delivered shipments weighing over 500
+pounds.
+=>
+select driver_name
+from Truck t
+join Shipment s
+on t.truck_no=s.truck_no
+group by driver_name,s.weight
+having s.weight>500
+
+.....................................
+Q3.Retrieve the maximum and minimum weights of the shipments. Rename the output as
+Max_Weight and Min_Weight respectively.
+=> 
+select max(weight) as Max_Weight , min(weight) as Min_Weight
+from shipment 
+.......................................
+Q4.For each customer, what is the average weight of package sent by the customer?
+=>
+select cust_id ,avg(weight)
+from shipment 
+group by cust_id 
+order by cust_id 
+
+........................................
+Q5.List the names and populations of cities that have received a shipment weighing over
+100 pounds.
+=>
+select city_name,population 
+from City
+where city_name in(
+				select destination 
+				from shipment 
+				where weight>600
+				group by destination
+)
+....................................................
+Q6.List cities that have received shipments from every customer.
+=>
+
+SELECT destination
+FROM shipment
+GROUP BY destination
+HAVING COUNT(DISTINCT cust_id) = (
+    SELECT COUNT(DISTINCT cust_id) 
+    FROM shipment
+);
+.......................................................
+7) For each city, what is the maximum weight of a package sent to that city?
+=>
+SELECT destination, MAX(weight) AS max_weight
+FROM shipment
+GROUP BY destination;
+
+.......................................................
+8) List the name and annual revenue of customers whose shipments have been delivered
+by truck driver ‘IQBAL’.
+=>SELECT c.cust_name, c.annual_revenue
+FROM customer c, shipment s, truck t
+WHERE c.cust_id = s.cust_id
+  AND s.truck_no = t.truck_no
+  AND t.driver_name = 'Iqbal Khan';
+..........................................................
+9) List drivers who have delivered shipments to every city.
+=>SELECT driver_name
+FROM truck t, shipment s
+WHERE t.truck_no = s.truck_no
+GROUP BY driver_name
+HAVING COUNT(DISTINCT s.destination) = (
+    SELECT COUNT(DISTINCT destination)
+    FROM shipment
+);
+...............................................................
+10) For each city, with population over 1 million, what is the minimum weight of a
+package sent to that city.
+=>select city_name, min(weight)
+from city c,shipment s
+where s.destination=c.city_name
+group by city_name 
+having population<5000000
+......................................................................................................................................................................
+1) Display the difference between highest and lowest salary of each department in
+descending order. Label the column as “Difference”.															ASS-9
+=>
+SELECT e.DEPTNO
+FROM EMP e, DEPT d
+WHERE d.DEPTNO = e.DEPTNO
+GROUP BY e.DEPTNO;
+......................................................................
+2) List all the employees’ employee number and name along with their immediate
+managers’ employee number and name.
+=>
+SELECT 
+    e1.EMPNO AS Employee_Number,
+    e1.ENAME AS Employee_Name,
+    e2.EMPNO AS Manager_Number,
+    e2.ENAME AS Manager_Name
+FROM 
+    emp e1, emp e2
+WHERE 
+    e2.EMPNO = e1.MGR;
+.......................................................................
+3) Create a query that will display the total number of employees and the total number
+of employees who were hired only in 2020. Give the column headings as “TOTAL”
+and “TOTAL_2020” respectively.
+=>
+SELECT 
+    COUNT(*) AS Total_Employees,
+    SUM(CASE WHEN HIREDATE > '2020-01-01' THEN 1 ELSE 0 END) AS Hired_After_2020
+FROM 
+    emp;
+......................................................................
+4) Display the manager number and the salary of the lowest paid employee under that
+manager. Exclude anyone whose manager is not known. Exclude any group where the
+minimum salaryis less than 1000. Sort the output in descending order of salary.
+=>SELECT 
+    MGR, 
+    MIN(SAL) AS Minimum_Salary
+FROM 
+    emp 
+WHERE 
+    SAL > 1000 
+    AND MGR IS NOT NULL
+GROUP BY 
+    MGR
+ORDER BY 
+    Minimum_Salary DESC;
+.........................................................................
+5) Assume that there are some departments where no employee is assigned. Now, write
+a query to display the department name, location name, number of employees, and the
+average salary for all the employees in that department. Label the columns as
+“DNAME”, “LOCATION”, “NUMBER OF PEOPLE”, and “AVERAGE SALARY”
+respectively. Round the averge salary to two decimal places. The outcome of the
+query must include the details of the departments where no employee is assigned and
+in that case the “AVERAGE SALARY” for that department is to be displayed as 0
+(zero).
+=>SELECT 
+    D.DNAME AS DNAME,
+    D.LOC AS LOCATION,
+    COUNT(E.EMPNO) AS NUMBER_OF_PEOPLE,
+    COALESCE(AVG(E.SAL), 0) AS AVERAGE_SALARY 
+FROM 
+    DEPT D
+LEFT JOIN 
+    EMP E ON D.DEPTNO = E.DEPTNO
+GROUP BY 
+    D.DNAME, D.LOC;
